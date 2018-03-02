@@ -13,6 +13,7 @@ Microservice for CarPool application. Builds optimal routes for passengers carri
 Running with Docker
 ----
 **docker command** <br />
+
 	> sudo docker run -p 80:80 --env-file ./carpool-logistics-prod.env -t asemenkov/carpool-logistics:latest
 
 **carpool-logistics-prod.env file** <br />
@@ -106,7 +107,7 @@ Communication with CarPool Logistics
 	**Description:** <br />
 		`id` - uuid of started process, must be equals to requested `id` parameter <br />
 		`state` - either `SUCCESS` or `ERROR`, if it's `RUNNING`, wait a second <br />
-		+ Logistics Process may take from 2 to 120 seconds depending on number of passengers and computational power <br />
+		* Logistics Process may take from 2 to 120 seconds depending on number of passengers and computational power <br />
 		`code` `message` - list of codes and messages can be found in [messages.properties](src/main/resources/messages.properties) <br />
 		`startTime` `endTime` - relates to start and end of Logistics Process (not trip), timezone: `Europe/Kiev` <br />
 		`optimization` - possible values: `[ DURATION | DISTANCE ]` <br />
@@ -150,7 +151,7 @@ Communication with CarPool Logistics
 		`address` - human readable hub's address <br />
 		`lat` `lon` - latitude and longitude of hub's coordinates <br />
 		`time` - estimated time of visit, timezone: `Europe/Kiev` <br />
-		+ If the trip starts at hub which has more than 1 passenger leaving in different time, the latest time will be chosen
+		* If the trip starts at hub which has more than 1 passenger leaving in different time, the latest time will be chosen
 	
 	**"passenger" sample:**
 	```json
