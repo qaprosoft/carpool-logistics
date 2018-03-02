@@ -4,17 +4,17 @@ Microservice for CarPool application. Builds optimal routes for passengers carri
 
 ### Main Features:
 
-##### 1. Minimization of each particular route (with Littles Algorithm)
-##### 2. Minimization of all the cars' routes taken together (with Kernighan-Lin Algorithm)
-##### 3. Minimization is based on either distance or duration
-##### 4. Usage of Google Maps Distance Matrices API for estimation of distance / duration
-##### 5. Capability to limit maximal length of route
+#### 1. Minimization of each particular route (with Littles Algorithm)
+#### 2. Minimization of all the cars' routes taken together (with Kernighan-Lin Algorithm)
+#### 3. Minimization is based on either distance or duration
+#### 4. Usage of Google Maps Distance Matrices API for estimation of distance / duration
+#### 5. Capability to limit maximal length of route
 
 Running with Docker
 ----
 **docker command** <br />
 
-	> sudo docker run -p 80:80 --env-file ./carpool-logistics-prod.env -t asemenkov/carpool-logistics:latest
+	sudo docker run -p 80:80 --env-file ./carpool-logistics-prod.env -t asemenkov/carpool-logistics:latest
 
 **carpool-logistics-prod.env file** <br />
 	`CPL_GM_KEY=google_maps_distance_matrices_api_key` <br />
@@ -51,9 +51,9 @@ Communication with CarPool Logistics
 	}
 	```
 	**Description:** <br />
-		`id` - uuid of started process, will be used later to get results or abort this process <br />
-		`state` - current state of the process, possible values: `[ RUNNING | SUCCESS | ERROR ]` <br />
-		`code` `message` - list of codes and messages can be found in [messages.properties](src/main/resources/messages.properties) <br />
+		`id` - uuid of started process, will be used later to get results or abort this process<br />
+		`state` - current state of the process, possible values: `[ RUNNING | SUCCESS | ERROR ]`<br />
+		`code` `message` - list of codes and messages can be found in [messages.properties](src/main/resources/messages.properties)<br />
 		`startTime` - relates to start of Logistics Process, timezone: `Europe/Kiev`
 
 ### Abort Logistics Process
@@ -105,16 +105,16 @@ Communication with CarPool Logistics
 	}
 	```
 	**Description:** <br />
-		`id` - uuid of started process, must be equals to requested `id` parameter <br />
-		`state` - either `SUCCESS` or `ERROR`, if it's `RUNNING`, wait a second <br />
-		* Logistics Process may take from 2 to 120 seconds depending on number of passengers and computational power <br />
-		`code` `message` - list of codes and messages can be found in [messages.properties](src/main/resources/messages.properties) <br />
-		`startTime` `endTime` - relates to start and end of Logistics Process (not trip), timezone: `Europe/Kiev` <br />
-		`optimization` - possible values: `[ DURATION | DISTANCE ]` <br />
-		`hubs` - total number of distinct assembly points <br />
-		`passengers` - total number of passengers <br />
-		`cars` - total number of cars needed to carry this amount of passengers <br />
-		`length` - total length of all routes taken together (in `seconds` or `meters`) <br />
+		`id` - uuid of started process, must be equals to requested `id` parameter<br />
+		`state` - either `SUCCESS` or `ERROR`, if it's `RUNNING`, wait a second<br />
+		&nbsp;&nbsp;&nbsp;&nbsp;Logistics Process may take from 2 to 120 seconds depending on number of passengers and computational power<br />
+		`code` `message` - list of codes and messages can be found in [messages.properties](src/main/resources/messages.properties)<br />
+		`startTime` `endTime` - relates to start and end of Logistics Process (not trip), timezone: `Europe/Kiev`<br />
+		`optimization` - possible values: `[ DURATION | DISTANCE ]`<br />
+		`hubs` - total number of distinct assembly points<br />
+		`passengers` - total number of passengers<br />
+		`cars` - total number of cars needed to carry this amount of passengers<br />
+		`length` - total length of all routes taken together (in `seconds` or `meters`)<br />
 		`routes` - array of routes, its size must be equal to `cars` value
 		
 	**"route" sample:**
@@ -127,9 +127,9 @@ Communication with CarPool Logistics
 	}
 	```
 	**Description:** <br />
-		`length` - length of particular route (in `seconds` or `meters`) <br />
-		`seats` - number of occupied seats i.e. number of passengers in particular car <br />
-		`hubs` - array of assembly points
+		`length` - length of particular route (in `seconds` or `meters`)<br />
+		`seats` - number of occupied seats i.e. number of passengers in particular car<br />
+		`hubs` - array of assembly points<br />
 		`passengers` - array of transport endpoints
 		
 	**"hub" sample:**
@@ -145,13 +145,13 @@ Communication with CarPool Logistics
 	}
 	```
 	**Description:** <br />
-		`id` - hub's id from database <br />
-		`name` - human readable hub's name <br />
-		`color` - hub's color from database <br />
-		`address` - human readable hub's address <br />
-		`lat` `lon` - latitude and longitude of hub's coordinates <br />
-		`time` - estimated time of visit, timezone: `Europe/Kiev` <br />
-		* If the trip starts at hub which has more than 1 passenger leaving in different time, the latest time will be chosen
+		`id` - hub's id from database<br />
+		`name` - human readable hub's name<br />
+		`color` - hub's color from database<br />
+		`address` - human readable hub's address<br />
+		`lat` `lon` - latitude and longitude of hub's coordinates<br />
+		`time` - estimated time of visit, timezone: `Europe/Kiev`<br />
+		&nbsp;&nbsp;&nbsp;&nbsp;If the trip starts at hub which has more than 1 passenger leaving in different time, the latest time will be chosen
 	
 	**"passenger" sample:**
 	```json
@@ -167,10 +167,10 @@ Communication with CarPool Logistics
 	}
 	```
 	**Description:** <br />
-		`task` - task's id from database <br />
-		`id` - passenger's id from database <br />
-		`name` - human readable passenger's full name <br />
-		`phone` - passenger's phone <br />
-		`address` - human readable passenger's address <br />
-		`lat` `lon` - latitude and longitude of passenger's coordinates <br />
+		`task` - task's id from database<br />
+		`id` - passenger's id from database<br />
+		`name` - human readable passenger's full name<br />
+		`phone` - passenger's phone<br />
+		`address` - human readable passenger's address<br />
+		`lat` `lon` - latitude and longitude of passenger's coordinates<br />
 		`time` - estimated time of passenger's arrival, timezone: `Europe/Kiev`
