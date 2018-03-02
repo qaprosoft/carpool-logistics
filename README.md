@@ -7,7 +7,7 @@ Microservice for CarPool application. Builds optimal routes for passengers carri
 #### 1. Minimization of each particular route (with Littles Algorithm)
 #### 2. Minimization of all the cars' routes taken together (with Kernighan-Lin Algorithm)
 #### 3. Minimization is based on either distance or duration
-#### 4. Usage of Google Maps Distance Matrices API for estimation of distance / duration
+#### 4. Usage of Google Maps Distance Matrix API for estimation of distance / duration
 #### 5. Capability to limit maximal length of route
 
 Running with Docker
@@ -17,7 +17,7 @@ Running with Docker
 	sudo docker run -p 80:80 --env-file ./carpool-logistics-prod.env -t asemenkov/carpool-logistics:latest
 
 **carpool-logistics-prod.env file** <br />
-	`CPL_GM_KEY=google_maps_distance_matrices_api_key` <br />
+	`CPL_GM_KEY=google_maps_distance_matrix_api_key` <br />
 	`CPL_SERVER_PORT=80` <br />
 	`CPL_SERVER_PATH=` <br />
 	`CPL_DB_URL=database_url` <br />
@@ -106,8 +106,7 @@ Communication with CarPool Logistics
 	```
 	**Description:** <br />
 		`id` - uuid of started process, must be equals to requested `id` parameter<br />
-		`state` - either `SUCCESS` or `ERROR`, if it's `RUNNING`, wait a second<br />
-		&nbsp;&nbsp;&nbsp;&nbsp;Logistics Process may take from 2 to 120 seconds depending on number of passengers and computational power<br />
+		`state` - either `SUCCESS` or `ERROR`, if it's `RUNNING`, wait a second. Logistics Process may take from 2 to 120 seconds depending on number of passengers and computational power<br />
 		`code` `message` - list of codes and messages can be found in [messages.properties](src/main/resources/messages.properties)<br />
 		`startTime` `endTime` - relates to start and end of Logistics Process (not trip), timezone: `Europe/Kiev`<br />
 		`optimization` - possible values: `[ DURATION | DISTANCE ]`<br />
@@ -151,7 +150,7 @@ Communication with CarPool Logistics
 		`address` - human readable hub's address<br />
 		`lat` `lon` - latitude and longitude of hub's coordinates<br />
 		`time` - estimated time of visit, timezone: `Europe/Kiev`<br />
-		&nbsp;&nbsp;&nbsp;&nbsp;If the trip starts at hub which has more than 1 passenger leaving in different time, the latest time will be chosen
+		If the trip starts at hub which has more than 1 passenger leaving in different time, the latest time will be chosen
 	
 	**"passenger" sample:**
 	```json
