@@ -42,6 +42,7 @@ public class Task implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(columnDefinition = "INT UNSIGNED")
 	private Long id;
 
 	@ManyToOne
@@ -56,10 +57,10 @@ public class Task implements Serializable {
 	@Column(name = "STATUS", nullable = false)
 	private Status status;
 
-	@Column(name = "TRIP_ID", nullable = true)
+	@Column(name = "TRIP_ID", columnDefinition = "INT UNSIGNED", nullable = true)
 	private Long tripId;
 
-	@Column(name = "SHIFT_ID", nullable = false)
+	@Column(name = "SHIFT_ID", columnDefinition = "INT UNSIGNED", nullable = false)
 	private Long shiftId;
 
 	@Column(name = "PICKUP_TIME", nullable = true)

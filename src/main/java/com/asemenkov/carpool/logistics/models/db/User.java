@@ -26,6 +26,7 @@ public class User implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(columnDefinition = "INT UNSIGNED")
 	private Long id;
 
 	@Column(name = "FIRST_NAME", nullable = true)

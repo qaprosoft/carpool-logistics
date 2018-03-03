@@ -26,6 +26,7 @@ public class Hub implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(columnDefinition = "INT UNSIGNED")
 	private Long id;
 
 	@Column(name = "NAME", nullable = false)
