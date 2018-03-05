@@ -150,7 +150,7 @@ Communication with CarPool Logistics
 		`address` - human readable hub's address<br />
 		`lat` `lon` - latitude and longitude of hub's coordinates<br />
 		`time` - estimated time of visit, timezone: `Europe/Kiev`<br />
-		If the trip starts at hub which has more than 1 passenger leaving in different time, the latest time will be chosen
+		If the trip starts at hub which has more than 1 passenger leaving at different time, the latest time will be chosen
 	
 	**"passenger" sample:**
 	```json
