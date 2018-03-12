@@ -46,13 +46,16 @@ public class KernighanLinAlgorithm<T> {
 			Arrays.stream(pairs).parallel().forEach(p -> p[0].mixTwoItems(p[1]));
 			newResult = Arrays.stream(mixables).mapToInt(Mixable::getMixResult).sum();
 
-			if (newResult - latestResult < 0) {
+			System.out.println(newResult);
+			int diff = newResult - latestResult;
+			latestResult = newResult;
+
+			if (diff < 0) {
 				biggerResult = standstillResult = 0;
-				latestResult = newResult;
 				continue;
 			}
 
-			if (newResult - latestResult == 0)
+			if (diff == 0)
 				if (standstillResult++ < 2)
 					continue;
 				else
