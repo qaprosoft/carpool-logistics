@@ -46,13 +46,19 @@ public class KernighanLinAlgorithm<T> {
 			Arrays.stream(pairs).parallel().forEach(p -> p[0].mixTwoItems(p[1]));
 			newResult = Arrays.stream(mixables).mapToInt(Mixable::getMixResult).sum();
 
-			if (newResult < latestResult && (latestResult = newResult) != Integer.MAX_VALUE)
+			if (newResult - latestResult < 0) {
+				biggerResult = standstillResult = 0;
+				latestResult = newResult;
 				continue;
-			else if (newResult == latestResult && standstillResult++ < 2)
-				continue;
-			else if (newResult == latestResult && standstillResult >= 2)
-				break;
-			else if (biggerResult++ >= 8)
+			}
+
+			if (newResult - latestResult == 0)
+				if (standstillResult++ < 2)
+					continue;
+				else
+					break;
+
+			if (biggerResult++ >= 4)
 				throw new IllegalStateException("IllegalStateException in KernighanLinAlgorithm.mix()");
 		}
 	}
