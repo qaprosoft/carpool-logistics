@@ -12,16 +12,10 @@ import java.util.Arrays;
 public class KernighanLinAlgorithm<T> {
 
 	private static final int MAX_ITERATION = 100;
-
 	private final Mixable[] mixables;
-
-	private int latestResult;
-	private int standstillResult;
-	private int biggerResult;
 
 	public KernighanLinAlgorithm(Mixable[] mixables) {
 		this.mixables = mixables;
-		this.latestResult = Integer.MAX_VALUE;
 	}
 
 	/**
@@ -42,12 +36,13 @@ public class KernighanLinAlgorithm<T> {
 
 		Mixable[][] pairs = splitIntoPairs();
 
+		int latestResult = Integer.MAX_VALUE, standstillResult = 0, biggerResult = 0, diff;
+
 		for (int i = 0, newResult; i < MAX_ITERATION; i++) {
 			Arrays.stream(pairs).parallel().forEach(p -> p[0].mixTwoItems(p[1]));
 			newResult = Arrays.stream(mixables).mapToInt(Mixable::getMixResult).sum();
 
-			System.out.println(newResult);
-			int diff = newResult - latestResult;
+			diff = newResult - latestResult;
 			latestResult = newResult;
 
 			if (diff < 0) {
