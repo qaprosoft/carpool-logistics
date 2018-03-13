@@ -12,16 +12,10 @@ import java.util.Arrays;
 public class KernighanLinAlgorithm<T> {
 
 	private static final int MAX_ITERATION = 100;
-
 	private final Mixable[] mixables;
-
-	private int latestResult;
-	private int standstillResult;
-	private int biggerResult;
 
 	public KernighanLinAlgorithm(Mixable[] mixables) {
 		this.mixables = mixables;
-		this.latestResult = Integer.MAX_VALUE;
 	}
 
 	/**
@@ -42,17 +36,27 @@ public class KernighanLinAlgorithm<T> {
 
 		Mixable[][] pairs = splitIntoPairs();
 
+		int latestResult = Integer.MAX_VALUE, standstillResult = 0, biggerResult = 0, diff;
+
 		for (int i = 0, newResult; i < MAX_ITERATION; i++) {
 			Arrays.stream(pairs).parallel().forEach(p -> p[0].mixTwoItems(p[1]));
 			newResult = Arrays.stream(mixables).mapToInt(Mixable::getMixResult).sum();
 
-			if (newResult < latestResult && (latestResult = newResult) != Integer.MAX_VALUE)
+			diff = newResult - latestResult;
+			latestResult = newResult;
+
+			if (diff < 0) {
+				biggerResult = standstillResult = 0;
 				continue;
-			else if (newResult == latestResult && standstillResult++ < 2)
-				continue;
-			else if (newResult == latestResult && standstillResult >= 2)
-				break;
-			else if (biggerResult++ >= 8)
+			}
+
+			if (diff == 0)
+				if (standstillResult++ < 2)
+					continue;
+				else
+					break;
+
+			if (biggerResult++ >= 4)
 				throw new IllegalStateException("IllegalStateException in KernighanLinAlgorithm.mix()");
 		}
 	}
