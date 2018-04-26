@@ -27,6 +27,7 @@ public class CacheConfiguration {
 
 	@Bean
 	public CacheManager cacheManager() {
+
 		GuavaCacheManager cacheManager = new GuavaCacheManager();
 		cacheManager.setCacheBuilder(CacheBuilder.newBuilder() //
 				.expireAfterWrite(expireAfterWrite, TimeUnit.HOURS) //

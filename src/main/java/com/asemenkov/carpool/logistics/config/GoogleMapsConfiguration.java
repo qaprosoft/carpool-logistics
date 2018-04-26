@@ -10,8 +10,8 @@ import org.springframework.context.annotation.Scope;
 import com.asemenkov.carpool.logistics.services.googlemaps.DistanceMatrixRequest;
 import com.asemenkov.carpool.logistics.services.googlemaps.GoogleMapsPoint;
 import com.asemenkov.carpool.logistics.services.googlemaps.PointsNeighbourship;
+import com.asemenkov.carpool.logistics.utils.QuerySender;
 import com.asemenkov.carpool.logistics.utils.Factories.DuoFactory;
-import com.asemenkov.carpool.logistics.utils.io.QuerySender;
 
 /**
  * @author asemenkov
