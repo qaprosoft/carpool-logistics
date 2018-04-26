@@ -2,7 +2,7 @@ package com.asemenkov.carpool.logistics.services.googlemaps;
 
 import java.util.Arrays;
 
-import com.asemenkov.carpool.logistics.utils.io.QuerySender;
+import com.asemenkov.carpool.logistics.utils.QuerySender;
 
 /**
  * @author asemenkov
@@ -108,16 +108,14 @@ public class DistanceMatrixRequest {
 
 		sb.append("&origins=");
 		Arrays.stream(origins) //
-				.filter(origin -> origin != null)
-				.forEach(origin -> sb //
+				.filter(origin -> origin != null).forEach(origin -> sb //
 						.append(origin.getLatitude()).append(',') //
 						.append(origin.getLongtitude()).append("|"));
 		sb.deleteCharAt(sb.length() - 1);
 
 		sb.append("&destinations=");
 		Arrays.stream(destinations) //
-				.filter(destination -> destination != null)
-				.forEach(destination -> sb //
+				.filter(destination -> destination != null).forEach(destination -> sb //
 						.append(destination.getLatitude()).append(',') //
 						.append(destination.getLongtitude()).append("|"));
 		sb.deleteCharAt(sb.length() - 1);
