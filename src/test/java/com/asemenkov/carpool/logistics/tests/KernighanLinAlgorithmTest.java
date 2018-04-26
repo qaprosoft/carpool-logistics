@@ -4,34 +4,20 @@ import static com.asemenkov.carpool.logistics.RealWorldData.REAL_DURATIONS;
 
 import java.util.Arrays;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.asemenkov.carpool.logistics.config.ApplicationConfiguration;
 import com.asemenkov.carpool.logistics.services.algorithms.Car;
 import com.asemenkov.carpool.logistics.services.algorithms.KernighanLinAlgorithm;
-import com.asemenkov.carpool.logistics.utils.Factories.DuoFactory;
-import com.asemenkov.carpool.logistics.utils.Factories.MonoFactory;
-import com.asemenkov.carpool.logistics.utils.io.CustomLogger;
+import com.asemenkov.carpool.logistics.utils.CustomLogger;
 
 /**
- * 
  * @author asemenkov
  * @since Feb 12, 2018
  */
 @Test
-@ContextConfiguration(classes = ApplicationConfiguration.class)
-public class KernighanLinAlgorithmTest extends AbstractTestNGSpringContextTests {
-
-	@Autowired
-	private DuoFactory<Integer, int[][], Car> carFactory;
-
-	@Autowired
-	private MonoFactory<Car[], KernighanLinAlgorithm<Car>> kernighanLinForCarsFactory;
+public class KernighanLinAlgorithmTest extends AbstractTest {
 
 	private final static int EXPECTED_LENGTH = 3480;
 	private final static int EXPECTED_CARS = 4;

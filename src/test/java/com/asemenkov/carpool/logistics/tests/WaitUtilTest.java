@@ -4,22 +4,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import com.asemenkov.carpool.logistics.config.ApplicationConfiguration;
+import com.asemenkov.carpool.logistics.utils.CustomLogger;
 import com.asemenkov.carpool.logistics.utils.WaitUtil;
-import com.asemenkov.carpool.logistics.utils.io.CustomLogger;
 
 /**
  * @author asemenkov
  * @since Feb 11, 2018
  */
 @Test
-@ContextConfiguration(classes = ApplicationConfiguration.class)
-public class WaitUtilTest extends AbstractTestNGSpringContextTests {
+public class WaitUtilTest extends AbstractTest {
 
 	private AtomicInteger passedTests = new AtomicInteger();
 
