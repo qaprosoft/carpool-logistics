@@ -1,4 +1,4 @@
-package com.asemenkov.carpool.logistics.utils.io;
+package com.asemenkov.carpool.logistics.utils;
 
 import java.io.BufferedReader;
 import java.io.IOException;

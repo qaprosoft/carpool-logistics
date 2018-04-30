@@ -2,37 +2,24 @@ package com.asemenkov.carpool.logistics.tests;
 
 import java.util.stream.LongStream;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import org.testng.asserts.Assertion;
 import org.testng.asserts.SoftAssert;
 
-import com.asemenkov.carpool.logistics.config.ApplicationConfiguration;
-import com.asemenkov.carpool.logistics.config.CacheConfiguration;
-import com.asemenkov.carpool.logistics.config.GoogleMapsConfiguration;
-import com.asemenkov.carpool.logistics.config.JpaConfiguration;
 import com.asemenkov.carpool.logistics.models.dto.LogisticsDto;
 import com.asemenkov.carpool.logistics.models.dto.RouteDto;
 import com.asemenkov.carpool.logistics.services.enums.State;
 import com.asemenkov.carpool.logistics.services.exceptions.LogisticsProcessNotFoundException;
-import com.asemenkov.carpool.logistics.services.logistics.LogisticsService;
+import com.asemenkov.carpool.logistics.utils.CustomLogger;
 import com.asemenkov.carpool.logistics.utils.WaitUtil;
-import com.asemenkov.carpool.logistics.utils.io.CustomLogger;
 
 /**
  * @author asemenkov
  * @since Feb 18, 2018
  */
 @Test
-@ContextConfiguration(classes = //
-{ ApplicationConfiguration.class, GoogleMapsConfiguration.class, JpaConfiguration.class, CacheConfiguration.class })
-public class IntegrationTest extends AbstractTestNGSpringContextTests {
-
-	@Autowired
-	private LogisticsService logisticsService;
+public class IntegrationTest extends AbstractTest {
 
 	@Test
 	public void testOnePassenger() throws LogisticsProcessNotFoundException {
@@ -61,7 +48,7 @@ public class IntegrationTest extends AbstractTestNGSpringContextTests {
 
 		String processId = "TEST-" + System.currentTimeMillis();
 		logisticsService.startLogisticsProcessWithId(processId, tasks).getLogisticsDto().getId();
-		WaitUtil.pause(20000);
+		WaitUtil.pause(10000);
 
 		LogisticsDto dto = logisticsService.getLogisticsProcessById(processId).getLogisticsDto();
 		Assert.assertNotNull(dto, "Failed to get LogisticsDto.");
@@ -81,7 +68,7 @@ public class IntegrationTest extends AbstractTestNGSpringContextTests {
 
 		String processId = "TEST-" + System.currentTimeMillis();
 		logisticsService.startLogisticsProcessWithId(processId, tasks).getLogisticsDto().getId();
-		WaitUtil.pause(40000);
+		WaitUtil.pause(20000);
 
 		LogisticsDto dto = logisticsService.getLogisticsProcessById(processId).getLogisticsDto();
 		Assert.assertNotNull(dto, "Failed to get LogisticsDto.");

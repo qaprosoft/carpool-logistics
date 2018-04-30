@@ -3,42 +3,28 @@ package com.asemenkov.carpool.logistics.tests;
 import java.text.ParseException;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
-import org.springframework.transaction.annotation.Transactional;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import com.asemenkov.carpool.logistics.config.JpaConfiguration;
 import com.asemenkov.carpool.logistics.models.db.Task;
-import com.asemenkov.carpool.logistics.repositories.TaskRepository;
-import com.asemenkov.carpool.logistics.utils.io.CustomLogger;
+import com.asemenkov.carpool.logistics.utils.CustomLogger;
 
 /**
  * @author asemenkov
  * @since Feb 17, 2018
  */
 @Test
-@Transactional(readOnly = true)
-@ContextConfiguration(classes = JpaConfiguration.class)
-public class RepositoryTest extends AbstractTestNGSpringContextTests {
-
-	@Autowired
-	private TaskRepository taskRepository;
+public class RepositoryTest extends AbstractTest {
 
 	@Test
 	public void testJpaTaskRepository() throws ParseException {
 		Assert.assertTrue(taskRepository.count() > 0, "Either 'TASKS' table is empty or something went wrong.");
 
+		int realTasksSize = 12;
 		long realTaskId = 57L;
 		String realHubName = "Eshak";
-		String realUserName = "Евгений";
 		Task task = taskRepository.getOne(realTaskId);
 		Assert.assertEquals(task.getHub().getName(), realHubName, "Wrong association with 'HUBS' table.");
-		Assert.assertEquals(task.getUser().getFirstName(), realUserName, "Wrong association with 'USERS' table.");
-
-		int realTasksSize = 12;
 
 		long time1 = System.currentTimeMillis();
 		List<Task> tasks = taskRepository.findByIdIn(37L, 38L, 39L, 41L, 42L, 43L, 45L, 46L, 47L, 48L, 49L, 50L);

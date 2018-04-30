@@ -66,7 +66,6 @@ public class JpaConfiguration {
 	}
 
 	@Bean
-	@Autowired
 	public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
 		LocalContainerEntityManagerFactoryBean factoryBean = new LocalContainerEntityManagerFactoryBean();
 		factoryBean.setDataSource(dataSource());

@@ -8,144 +8,216 @@ package com.asemenkov.carpool.logistics.services.algorithms;
  */
 public class LittlesAlgorithm {
 
-	public static final int INF = Integer.MAX_VALUE;
-	public static final int BIG = 1000000;
+	public static final int INF1 = 1111111111;
+	public static final int INF2 = 111111111;
+	public static final int INF3 = 1111111;
 
-	private int[][] graph;
-	private int size;
+	public static final int TENDS_TO_INF1 = 1000000000;
+	public static final int TENDS_TO_INF2 = 100000000;
+	public static final int TENDS_TO_INF3 = 1000000;
 
-	/**
-	 * Creates copy of matrix, avoiding alternation of the initial matrix. </br>
-	 * Diagonal elements are set to INF, so preset is not required.
-	 * 
-	 * @param graph
-	 *            -- square matrix at least 2x2
-	 */
-	public LittlesAlgorithm withGraph(int[][] graph) {
-		this.graph = deepCopyOfMatrix(graph);
-		this.size = this.graph.length;
-		for (int i = 0; i < size; i++)
-			this.graph[i][i] = INF;
-		return this;
-	}
+	private int[][] bestCycle;
+	private int bestPath;
+	private int stepDelta;
 
 	/**
-	 * Creates truncated copy of matrix, avoiding alternation of the initial
-	 * matrix. </br>
-	 * Diagonal elements are set to INF, so preset is not required.
+	 * Recursively builds Hamiltonian Cycle for copy of argument matrix. Reduces
+	 * matrix size on every iteration. Initial matrix is not altered. Diagonal
+	 * elements are set to INF, so preset is not required.
 	 * 
 	 * @param graph
 	 *            -- square matrix at least 2x2
 	 * @param size
 	 *            -- size of matrix, must be less or equals origin matrix sizes
 	 */
-	public LittlesAlgorithm withGraph(int[][] graph, int size) {
-		this.size = size;
-		this.graph = deepCopyOfMatrix(graph, size);
-		for (int i = 0; i < size; i++)
-			this.graph[i][i] = INF;
-		return this;
+	public void findHamiltonianCycle(int[][] graph) {
+		findHamiltonianCycle(graph, graph.length);
 	}
 
 	/**
-	 * Recursively builds Hamiltonian Cycle, reducing matrix size on every
-	 * iteration. The Cycle passes through every point and withdraws into the
-	 * initial one. Calculates overall length of the Cycle, that must be as
-	 * short as possible.
+	 * Recursively builds Hamiltonian Cycle for copy of argument matrix. Reduces
+	 * matrix size on every iteration. Initial matrix is not altered. Diagonal
+	 * elements are set to INF, so preset is not required.
 	 * 
-	 * @return integer matrix of size (n+1)x2, where n = number of edges </br>
-	 *         element[0][0] - contains overall length of cycle </br>
-	 *         element[0][1] - is not used </br>
-	 *         element[i][0] and element[i][1] - represents an edge which
-	 *         connects two nodes
+	 * @param graph
+	 *            -- square matrix at least 2x2
+	 * @param size
+	 *            -- size of matrix, must be less or equals origin matrix sizes
 	 */
-	public int[][] findHamiltonianCycle() {
-		int[][] bottomLineAndCycle = new int[size + 1][2];
-		int[][] toReturn = recursiveHamiltonianCycle(bottomLineAndCycle);
-		toReturn = shiftBackCycle(toReturn);
+	public void findHamiltonianCycle(int[][] graph, int size) {
+		bestCycle = null;
+		bestPath = INF1;
+		int[][] indexedGraph = getIndexedGraph(graph, size);
+		recursiveHamiltonianCycle(indexedGraph, new int[0][2]);
+	}
+
+	/**
+	 * @return length of the shortest possible path after invocation of</br>
+	 *         {@link #findHamiltonianCycle(int[][], int)}
+	 */
+	public int getPathLength() {
+		return bestPath;
+	}
+
+	/**
+	 * @return the shortest possible path after invocation of</br>
+	 *         {@link #findHamiltonianCycle(int[][], int)}</br>
+	 *         in format of integer matrix of size nx2, where n = number of edges
+	 */
+	public int[][] getPathCycle() {
+		return bestCycle;
+	}
+
+	/**
+	 * @param graph
+	 *            -- square matrix at least 2x2
+	 * @param size
+	 *            -- size of original matrix, must be less or equals of graph sizes
+	 * @return square copy of matrix [(size + 1) x (size + 1)]</br>
+	 *         the first row and column contains indexes of matrix row/column</br>
+	 *         for example: {0, 0, 1, 2, 3, 4, ..., (size - 1)} </br>
+	 *         diagonal elements are set to INF
+	 */
+	private int[][] getIndexedGraph(int[][] graph, int size) {
+		int sizePlusOne = size + 1;
+		int[][] toReturn = new int[sizePlusOne][sizePlusOne];
+
+		for (int i = 1; i < sizePlusOne; i++)
+			System.arraycopy(graph[i - 1], 0, toReturn[i], 1, size);
+
+		for (int i = 1; i < sizePlusOne; i++) {
+			toReturn[0][i] = toReturn[i][0] = i - 1;
+			toReturn[i][i] = INF1;
+		}
+
 		return toReturn;
 	}
 
 	/**
-	 * 1. In every row of the graph takes the minimum element and subtracts it
-	 * from every element of this row, making at least one '0' in the row.</br>
+	 * 1. In every row of the graph takes the minimum element and subtracts it from
+	 * every element of this row, making at least one '0' in the row.</br>
 	 * 
-	 * 2. In every column of the graph takes the minimum element and subtracts
-	 * it from every element of this column, making at least one '0' in the
+	 * 2. In every column of the graph takes the minimum element and subtracts it
+	 * from every element of this column, making at least one '0' in the
 	 * column.</br>
 	 * 
-	 * 3. All of the subtracted elements are added to the Bottom Line, which
+	 * 3. All of the subtracted elements are added to the graph[0][0], which
 	 * represents overall length of the Cycle.</br>
 	 * 
-	 * 4. Looks for '0' elements.</br>
+	 * 4. If overall length of the Cycle is bigger than the best previously seen,
+	 * the recursive calculations are stopped in this branch.</br>
 	 * 
-	 * 5. For each '0' element, looks for the minimum element of its row and the
-	 * minimum element of its column, exclusive of this '0' element, and sums
-	 * this pair up.</br>
+	 * 5. Looks for '0' elements.</br>
 	 * 
-	 * 6. Takes the maximum element of the Little's Sums (if there are 2 or more
-	 * max elements, the algorithm forks away and steps 7-9 are executed for
-	 * each element).</br>
+	 * 6. For each '0' element, looks for the minimum element of its row and the
+	 * minimum element of its column, not including this '0' element, and sums this
+	 * pair up.</br>
 	 * 
-	 * 7. Takes '0' element, which corresponds the Little's Sum from the step 6,
-	 * and removes its row and column from the graph.</br>
+	 * 7. Takes the maximum element of the Little's Sums (if there are 2 or more max
+	 * elements, the algorithm forks away and steps 8-12 are executed for each
+	 * element).</br>
 	 * 
-	 * 8. If the new smaller matrix contains row and column without INF, it sets
-	 * INF at the intersection to avoid early shortage of the Cycle.</br>
+	 * 8. Takes '0' element, which corresponds the Little's Sum from the step 7, and
+	 * removes its row and column from the graph.</br>
 	 * 
-	 * 9. Recursively repeats steps 1-8 until the graph size becomes 2x2 with an
-	 * obvious path.</br>
+	 * 9. If the new smaller matrix contains row and column without INF, it sets INF
+	 * at the intersection to avoid early shortage of the Cycle.</br>
 	 * 
-	 * 10. If the algorithm has more than one fork, chooses the shortest Cycle.
+	 * 10. Takes '0' element, which corresponds the Little's Sum from the step 7,
+	 * and sets this element to INF, discarding this edge and saving graph
+	 * size.</br>
 	 * 
-	 * @param bottomLineAndCycle
-	 *            -- zero-filled array of size (n+1)x2 where n = number of edges
-	 * @return preliminary Hamiltonian Cycle and its length
+	 * 11. Recursively repeats steps 1-10 for each new graph until the size becomes
+	 * 3x3(including indexes) with an obvious path.</br>
+	 * 
+	 * 12. Updates 'bestPath' and 'bestCycle' variables, if and only if the branch
+	 * provide better ones.
+	 * 
+	 * @param graph
+	 *            -- square matrix at least 3x3 with indexes and accumulated length
+	 * @param cycle
+	 *            -- matrix of size nx2 where n = number of accumulated edges
 	 */
-	private int[][] recursiveHamiltonianCycle(int[][] bottomLineAndCycle) {
+	private void recursiveHamiltonianCycle(int[][] graph, int[][] cycle) {
 
-		bottomLineAndCycle[0][0] += subtractMinElementInEachRow();
-		if (bottomLineAndCycle[0][0] > 1000000000)
-			return bottomLineAndCycle;
+		if ((stepDelta = subtractMinElementInEachRow(graph)) == INF2)
+			return;
 
-		bottomLineAndCycle[0][0] += subtractMinElementInEachCol();
-		if (bottomLineAndCycle[0][0] > 1000000000)
-			return bottomLineAndCycle;
+		graph[0][0] += stepDelta;
+		if (graph[0][0] >= bestPath)
+			return;
 
-		int[][] zerosCoords = findZerosCoordinates();
+		if ((stepDelta = subtractMinElementInEachCol(graph)) == INF2)
+			return;
 
-		if (size == 2) {
-			bottomLineAndCycle[2] = zerosCoords[1];
-			bottomLineAndCycle[1] = zerosCoords[0];
-			return bottomLineAndCycle;
+		graph[0][0] += stepDelta;
+		if (graph[0][0] >= bestPath)
+			return;
+
+		int[][] zerosCoords = findZerosCoordinates(graph);
+
+		if (graph.length == 3) {
+			if (graph[0][0] < bestPath) {
+				bestCycle = appendToCycle(graph, cycle, zerosCoords[0], zerosCoords[1]);
+				bestPath = graph[0][0];
+			}
+			return;
 		}
 
-		int[] littlesSums = findLittlesSums(zerosCoords);
-		sortLittlesSumsAndCoords(zerosCoords, littlesSums);
+		int[] littlesSums = findLittlesSums(graph, zerosCoords);
+		int[][] coords = filterCoordsLessThanMaxSum(zerosCoords, littlesSums);
+		int[][][] branchedGraph = branchOutGraph(graph, coords);
 
-		if (littlesSums[1] < 0) {
-			removeRowAndColumnByCoordinates(zerosCoords[0]);
-			setInfToPreventFromEarlyShortage();
-			bottomLineAndCycle[size + 1] = zerosCoords[0];
-			return recursiveHamiltonianCycle(bottomLineAndCycle);
+		for (int i = 0; i < coords.length; i++) {
+			int[][] newCycle = appendToCycle(graph, cycle, coords[i]);
+			recursiveHamiltonianCycle(branchedGraph[i], newCycle);
 		}
 
-		int[][] graphCopy = deepCopyOfMatrix(graph);
-		int[][] toReturn = new int[bottomLineAndCycle.length][2];
-		toReturn[0][0] = INF;
+		for (int i = coords.length; i < branchedGraph.length; i++)
+			recursiveHamiltonianCycle(branchedGraph[i], cycle);
+	}
 
-		for (int i = 0; i < littlesSums.length && littlesSums[i] != -1; graph = graphCopy, size = graph.length) {
-			removeRowAndColumnByCoordinates(zerosCoords[i]);
-			setInfToPreventFromEarlyShortage();
+	/**
+	 * Adds one more edge to the previously accumulated ones. Must be invoked only
+	 * in case of removal of row and column from the graph.
+	 * 
+	 * @param graph
+	 *            -- square matrix at least 4x4 with indexes and accumulated length
+	 * @param cycle
+	 *            -- matrix of size nx2 where n = number of accumulated edges
+	 * @param coord
+	 *            -- row and column which are removed in current recursive step
+	 * @return matrix of size (n+1)x2, where n = length of cycle.</br>
+	 */
+	private int[][] appendToCycle(int[][] graph, int[][] cycle, int[] coord) {
+		int[][] toReturn = new int[cycle.length + 1][2];
+		System.arraycopy(cycle, 0, toReturn, 1, cycle.length);
+		toReturn[0][0] = graph[coord[0]][0];
+		toReturn[0][1] = graph[0][coord[1]];
+		return toReturn;
+	}
 
-			int[][] bottomLineAndCycleCopy = deepCopyOfMatrix(bottomLineAndCycle);
-			bottomLineAndCycleCopy[size + 1] = zerosCoords[i++];
-
-			int[][] branchBottomLineAndCycle = recursiveHamiltonianCycle(bottomLineAndCycleCopy);
-			if (branchBottomLineAndCycle[0][0] < toReturn[0][0])
-				toReturn = branchBottomLineAndCycle;
-		}
-
+	/**
+	 * Adds two final edges to the previously accumulated ones. Must be invoked in
+	 * the end of the branch, when matrix 3x3 is reached.
+	 * 
+	 * @param graph
+	 *            -- square matrix 3x3 with indexes and accumulated length
+	 * @param cycle
+	 *            -- matrix of size nx2 where n = number of accumulated edges
+	 * @param coord0
+	 *            -- row and column of the first '0' element
+	 * @param coord1
+	 *            -- row and column of the second '0' element
+	 * @return matrix of size (n+2)x2, where n = length of cycle.</br>
+	 */
+	private int[][] appendToCycle(int[][] graph, int[][] cycle, int[] coord0, int[] coord1) {
+		int[][] toReturn = new int[cycle.length + 2][2];
+		System.arraycopy(cycle, 0, toReturn, 2, cycle.length);
+		toReturn[0][0] = graph[coord0[0]][0];
+		toReturn[0][1] = graph[0][coord0[1]];
+		toReturn[1][0] = graph[coord1[0]][0];
+		toReturn[1][1] = graph[0][coord1[1]];
 		return toReturn;
 	}
 
@@ -154,18 +226,21 @@ public class LittlesAlgorithm {
 	 * If it isn't zero, it's subtracted from each element of the row, including
 	 * this min element.
 	 * 
+	 * @param graph
+	 *            -- square matrix at least 3x3 with indexes and accumulated length
+	 * 
 	 * @return sum of the minimum elements of each row
 	 */
-	private int subtractMinElementInEachRow() {
+	private int subtractMinElementInEachRow(int[][] graph) {
 		int min, toReturn = 0;
 
-		for (int i = 0; i < size; toReturn += min, i++) {
-			min = searchMinElementInRow(i);
+		for (int i = 1; i < graph.length; toReturn += min, i++) {
+			min = searchMinElementInRow(graph, i);
 			if (min == 0)
 				continue;
-			if (min > 1000000000)
-				return INF;
-			for (int j = 0; j < size; j++)
+			if (min > TENDS_TO_INF2)
+				return INF2;
+			for (int j = 1; j < graph.length; j++)
 				graph[i][j] -= min;
 		}
 
@@ -174,21 +249,24 @@ public class LittlesAlgorithm {
 
 	/**
 	 * Looks for minimum element in each column. </br>
-	 * If it isn't zero, it's subtracted from each element of the column,
-	 * including this min element.
+	 * If it isn't zero, it's subtracted from each element of the column, including
+	 * this min element.
+	 * 
+	 * @param graph
+	 *            -- square matrix at least 3x3 with indexes and accumulated length
 	 * 
 	 * @return sum of the minimum elements of each column
 	 */
-	private int subtractMinElementInEachCol() {
+	private int subtractMinElementInEachCol(int[][] graph) {
 		int min, toReturn = 0;
 
-		for (int i = 0; i < size; toReturn += min, i++) {
-			min = searchMinElementInCol(i);
+		for (int i = 1; i < graph.length; toReturn += min, i++) {
+			min = searchMinElementInCol(graph, i);
 			if (min == 0)
 				continue;
-			if (min > 1000000000)
-				return INF;
-			for (int j = 0; j < size; j++)
+			if (min > TENDS_TO_INF2)
+				return INF2;
+			for (int j = 1; j < graph.length; j++)
 				graph[j][i] -= min;
 		}
 
@@ -198,14 +276,15 @@ public class LittlesAlgorithm {
 	/**
 	 * Searches the minimum element in particular row of the graph.
 	 * 
+	 * @param graph
+	 *            -- square matrix at least 3x3 with indexes and accumulated length
 	 * @param row
-	 *            -- row to search in, must be not negative and less than the
-	 *            graph size
+	 *            -- row to search in, must be less than the graph size
 	 * @return value of the minimum element in the row
 	 */
-	private int searchMinElementInRow(int row) {
-		int toReturn = graph[row][0];
-		for (int i = 1; i < size; i++)
+	private int searchMinElementInRow(int[][] graph, int row) {
+		int toReturn = graph[row][1];
+		for (int i = 2; i < graph.length; i++)
 			if (graph[row][i] == 0)
 				return 0;
 			else if (graph[row][i] < toReturn)
@@ -216,15 +295,16 @@ public class LittlesAlgorithm {
 	/**
 	 * Searches the minimum element in particular column of the graph.
 	 * 
+	 * @param graph
+	 *            -- square matrix at least 3x3 with indexes and accumulated length
 	 * @param col
-	 *            -- column to search in, must be not negative and less than the
-	 *            graph size
+	 *            -- column to search in, must be less than the graph size
 	 * @return value of the minimum element in the column
 	 */
-	private int searchMinElementInCol(int col) {
-		int toReturn = graph[0][col];
-		for (int i = 1; i < size; i++)
-			if (graph[col][i] == 0)
+	private int searchMinElementInCol(int[][] graph, int col) {
+		int toReturn = graph[1][col];
+		for (int i = 2; i < graph.length; i++)
+			if (graph[i][col] == 0)
 				return 0;
 			else if (graph[i][col] < toReturn)
 				toReturn = graph[i][col];
@@ -234,18 +314,20 @@ public class LittlesAlgorithm {
 	/**
 	 * Looks for '0' elements in the graph matrix.
 	 * 
+	 * @param graph
+	 *            -- square matrix at least 3x3 with indexes and accumulated length
 	 * @return matrix of size nx2, where n = number of '0' elements found
 	 */
-	private int[][] findZerosCoordinates() {
+	private int[][] findZerosCoordinates(int[][] graph) {
 		int zeros = 0;
-		for (int i = 0; i < size; i++)
-			for (int j = 0; j < size; j++)
+		for (int i = 1; i < graph.length; i++)
+			for (int j = 1; j < graph.length; j++)
 				if (graph[i][j] == 0)
 					zeros++;
 
 		int[][] toReturn = new int[zeros][2];
-		for (int i = 0; i < size; i++)
-			for (int j = 0; j < size; j++)
+		for (int i = 1; i < graph.length; i++)
+			for (int j = 1; j < graph.length; j++)
 				if (graph[i][j] == 0) {
 					toReturn[--zeros][0] = i;
 					toReturn[zeros][1] = j;
@@ -256,9 +338,11 @@ public class LittlesAlgorithm {
 
 	/**
 	 * Calculates Little's sum for each '0' element. This is sum of the minimum
-	 * element in row and the minimum element in column of '0' element,
-	 * excluding this '0' element.
+	 * element in row and the minimum element in column of '0' element, excluding
+	 * this '0' element.
 	 * 
+	 * @param graph
+	 *            -- square matrix at least 3x3 with indexes and accumulated length
 	 * @param coords
 	 *            -- array of size nx2, where n = number of '0' elements</br>
 	 *            element[i][0] represents row of '0'</br>
@@ -266,18 +350,18 @@ public class LittlesAlgorithm {
 	 *            each element must be not negative and less than the graph size
 	 * @return Little's sums array of size n, where n = number of '0' elements
 	 */
-	private int[] findLittlesSums(int[][] coords) {
+	private int[] findLittlesSums(int[][] graph, int[][] coords) {
 		int[] toReturn = new int[coords.length];
 		int minInRowI, minInColJ;
 
 		for (int c = 0; c < coords.length; c++) {
-			minInRowI = minInColJ = INF;
+			minInRowI = minInColJ = INF1;
 
-			for (int k = 0; k < size; k++)
+			for (int k = 1; k < graph.length; k++)
 				if (k != coords[c][1] && graph[coords[c][0]][k] < minInRowI)
 					minInRowI = graph[coords[c][0]][k];
 
-			for (int k = 0; k < size; k++)
+			for (int k = 1; k < graph.length; k++)
 				if (k != coords[c][0] && graph[k][coords[c][1]] < minInColJ)
 					minInColJ = graph[k][coords[c][1]];
 
@@ -288,72 +372,73 @@ public class LittlesAlgorithm {
 	}
 
 	/**
-	 * Actually, it is not sorting. The 2 maximums of sums and corresponding
-	 * coordinates are moved to the beginning of their initial arrays. The rest
-	 * of elements of sums array are set to zero: {5,14,11,14} -> {14,11,14,-1}.
-	 * Coordinates are not reduced to zero, just shifted to the beginning.
+	 * Looks for maximum sum and corresponding '0' coordinates. All the coordinates,
+	 * which don't correspond these maximum sums, are removed.
 	 * 
 	 * @param coords
 	 *            -- coordinates of each '0' element
 	 * @param sums
 	 *            -- Little's sums for each '0' element
+	 * @return coordinates matrix of size nx2, where n = number of maximum sums
 	 */
-	private void sortLittlesSumsAndCoords(int[][] coords, int[] sums) {
-		int max1 = sums[0], max2 = -1;
+	private int[][] filterCoordsLessThanMaxSum(int[][] coords, int[] sums) {
+		int max = sums[0];
+		int count = 1;
+
 		for (int i = 1; i < sums.length; i++)
-			if (sums[i] > max1) {
-				max2 = max1;
-				max1 = sums[i];
+			if (sums[i] > max) {
+				max = sums[i];
+				count = 1;
+			} else if (sums[i] < max) {
+				continue;
+			} else {
+				count++;
 			}
 
-		int count = 0;
+		int[][] toReturn = new int[count][2];
 		for (int i = 0; i < sums.length; i++)
-			if (sums[i] == max1 || sums[i] == max2) {
-				sums[count] = sums[i];
-				coords[count++] = coords[i];
-			}
+			if (sums[i] == max)
+				toReturn[--count] = coords[i];
 
-		for (; count < sums.length; count++)
-			sums[count] = -1;
-	}
-
-	/**
-	 * @param matrix
-	 *            -- any matrix which we need to prevent from alteration
-	 * @return new matrix with exact the same elements as the argument matrix
-	 */
-	private int[][] deepCopyOfMatrix(int[][] matrix) {
-		int[][] toReturn = new int[matrix.length][matrix[0].length];
-		for (int i = 0; i < matrix.length; i++)
-			for (int j = 0; j < matrix[0].length; j++)
-				toReturn[i][j] = matrix[i][j];
 		return toReturn;
 	}
 
 	/**
-	 * @param matrix
-	 *            -- any matrix which we need to prevent from alteration
-	 * @param size
-	 *            -- copy size, must be less or equals origin matrix sizes
-	 * @return new matrix size x size
+	 * Creates altered copies of current graph. Each copy represents its own branch
+	 * 
+	 * @param graph
+	 *            -- square matrix at least 3x3 with indexes and accumulated length
+	 * @param coords
+	 *            -- coordinates of '0' elements, that correspond to maximum sum
+	 * @return 3-dimensional array - collection of graph alterations.</br>
+	 *         Total size is 2n, where n = number of coords.</br>
+	 *         The 1st n matrices have size (m-1)x(m-1), where m = graph size. These
+	 *         matrices represents original graph after row and column removal.</br>
+	 *         The 2nd n matrices have size mxm, where m = graph size. These
+	 *         matrices represents original graph with the element at row and column
+	 *         intersection set to INF.</br>
 	 */
-	private int[][] deepCopyOfMatrix(int[][] matrix, int size) {
-		int[][] toReturn = new int[size][size];
-		for (int i = 0; i < size; i++)
-			for (int j = 0; j < size; j++)
-				toReturn[i][j] = matrix[i][j];
-		return toReturn;
+	private int[][][] branchOutGraph(int[][] graph, int[][] coords) {
+		int[][][] branchedGraph = new int[coords.length + coords.length][][];
+		for (int i = 0, j = coords.length; i < coords.length; i++, j++) {
+			branchedGraph[i] = removeRowAndColumnByCoords(graph, coords[i]);
+			branchedGraph[j] = setInfToDiscardEdge(graph, coords[i]);
+		}
+		return branchedGraph;
 	}
 
 	/**
+	 * @param graph
+	 *            -- square matrix at least 3x3 with indexes and accumulated length
 	 * @param coord
 	 *            -- matrix of size 1x2</br>
 	 *            element[0] - index of row which will be removed</br>
 	 *            element[1] - index of column which will be removed</br>
 	 *            both elements must be not negative less than the graph size
+	 * @return altered copy of graph after row and column removal
 	 */
-	private void removeRowAndColumnByCoordinates(int[] coord) {
-		int[][] newgraph = new int[size - 1][size - 1];
+	private int[][] removeRowAndColumnByCoords(int[][] graph, int[] coord) {
+		int[][] newgraph = new int[graph.length - 1][graph.length - 1];
 		int i, j;
 
 		for (i = 0; i < coord[0]; i++)
@@ -375,91 +460,59 @@ public class LittlesAlgorithm {
 				for (j = coord[1]; j < newgraph.length; j++)
 					newgraph[i][j] = graph[i + 1][j + 1];
 
-		graph = newgraph;
-		size = graph.length;
+		setInfToPreventFromEarlyShortage(newgraph);
+		return newgraph;
 	}
 
 	/**
-	 * If the graph contains row and column without INF, it sets INF at the
-	 * intersection to avoid early shortage of the Cycle.</br>
+	 * @param graph
+	 *            -- square matrix at least 3x3 with indexes and accumulated length
+	 * @param coord
+	 *            -- coordinates of element which must be set to INF
+	 * @return copy of argument graph with INF at [coord[0]][coord[1]]
 	 */
-	private void setInfToPreventFromEarlyShortage() {
-		int row = 0;
-		rows: for (; row < size; row++) {
-			for (int i = 0; i < size; i++)
-				if (graph[row][i] > 1000000000)
+	private int[][] setInfToDiscardEdge(int[][] graph, int[] coord) {
+		int[][] newgraph = new int[graph.length][graph.length];
+
+		for (int i = 0; i < graph.length; i++)
+			System.arraycopy(graph[i], 0, newgraph[i], 0, graph.length);
+
+		newgraph[coord[0]][coord[1]] = INF2;
+		return newgraph;
+	}
+
+	/**
+	 * If the argument graph contains row and column without INF1, it will be set at
+	 * the intersection. That helps to avoid early shortage of the Cycle.
+	 * 
+	 * @param graph
+	 *            -- square matrix at least 3x3 with indexes and accumulated length
+	 */
+	private void setInfToPreventFromEarlyShortage(int[][] graph) {
+
+		int row = 1;
+		rows: for (; row < graph.length; row++) {
+			for (int i = 1; i < graph.length; i++)
+				if (graph[row][i] > TENDS_TO_INF1)
 					continue rows;
 			break;
 		}
 
-		if (row == size)
+		if (row == graph.length)
 			return;
 
-		int col = 0;
-		cols: for (; col < size; col++) {
-			for (int i = 0; i < size; i++)
-				if (graph[i][col] > 1000000000)
+		int col = 1;
+		cols: for (; col < graph.length; col++) {
+			for (int i = 1; i < graph.length; i++)
+				if (graph[i][col] > TENDS_TO_INF1)
 					continue cols;
 			break;
 		}
 
-		if (col == size)
+		if (col == graph.length)
 			return;
 
-		graph[row][col] = INF;
-	}
-
-	/**
-	 * This shift back is needed, because on every iteration, after row and
-	 * column removal, some rows of the graph are shifted up and some columns
-	 * are shifted right. Their indexes are decremented relatively the initial
-	 * values. This method reverts these decrements.
-	 * 
-	 * @param bottomLineAndCycle
-	 *            -- integer matrix of size (n+1)x2, where n = number of edges
-	 * @return the argument matrix with shifted values
-	 */
-	private int[][] shiftBackCycle(int[][] bottomLineAndCycle) {
-		int[] rows = new int[bottomLineAndCycle.length - 1];
-		int[] cols = new int[rows.length];
-
-		for (int i = 1; i < rows.length; i++)
-			rows[i] = cols[i] = i;
-
-		for (int i = rows.length; i > 1; i--) {
-			int row = bottomLineAndCycle[i][0];
-			int col = bottomLineAndCycle[i][1];
-
-			bottomLineAndCycle[i][0] = rows[row];
-			bottomLineAndCycle[i][1] = cols[col];
-
-			for (int j = row + 1; j < rows.length; j++)
-				rows[j - 1] = rows[j];
-
-			for (int j = col + 1; j < cols.length; j++)
-				cols[j - 1] = cols[j];
-		}
-
-		bottomLineAndCycle[1][0] = rows[0];
-		bottomLineAndCycle[1][1] = cols[0];
-
-		return bottomLineAndCycle;
-	}
-
-	/**
-	 * @return graph matrix in string format</br>
-	 *         <b>For debug only</b>
-	 */
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder("\n==================== GRAPH ====================\n");
-		for (int i = 0; i < graph.length; i++, sb.append("\n"))
-			for (int j = 0; j < graph[0].length; j++, sb.append("\t"))
-				if (graph[i][j] > 1000000000)
-					sb.append("INF");
-				else
-					sb.append(graph[i][j]);
-		return sb.append("===============================================").toString();
+		graph[row][col] = INF1;
 	}
 
 }

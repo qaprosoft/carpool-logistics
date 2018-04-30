@@ -222,8 +222,8 @@ public class LogisticsProcess {
 	}
 
 	/**
-	 * Guarantees that the same pick up location of different tasks will have
-	 * the same index and the same position in Global Matrix
+	 * Guarantees that the same pick up location of different tasks will have the
+	 * same index and the same position in Global Matrix
 	 * 
 	 * @param task
 	 *            -- a task which corresponds to one passenger
@@ -244,9 +244,9 @@ public class LogisticsProcess {
 	}
 
 	/**
-	 * Calculates the minimal amount of cars needed to allocate all of the
-	 * available passengers</br>
-	 * Based on calculated amount, populates this.cars array with new empty cars
+	 * Calculates the minimal amount of cars needed to allocate all of the available
+	 * passengers</br>
+	 * Based on calculated amount, populates this.cars array with new cars
 	 */
 	private void fillCars() {
 		cars = new Car[tasks.size() / CAPACITY + (tasks.size() % CAPACITY > 0 ? 1 : 0)];
@@ -265,17 +265,17 @@ public class LogisticsProcess {
 	 * 
 	 * 3. Removes duplicates of hubs locations, so only distinct ones left</br>
 	 * 
-	 * 4. Finds the correct order of pick up and drop off locations based on
-	 * Car's route[] array</br>
+	 * 4. Finds the correct order of pick up and drop off locations based on Car's
+	 * route[] array</br>
 	 * 
-	 * 5. Builds Hub and User LocationDTOs based pick up and drop off locations
-	 * and sort them according to order found in step 4</br>
+	 * 5. Builds Hub and User LocationDTOs based pick up and drop off locations and
+	 * sort them according to order found in step 4</br>
 	 * 
 	 * 6. If 2 or more passengers should be picked up from the same hub but in
 	 * different time, the later one will be chosen to be route start time</br>
 	 * 
-	 * 7. Estimates hub/passenger's arrival time as time of previous wayPoint
-	 * plus time needed to get to the current wayPoint
+	 * 7. Estimates hub/passenger's arrival time as time of previous wayPoint plus
+	 * time needed to get to the current wayPoint
 	 */
 	private RouteDto mapCarToRouteDto(Car car) {
 		List<GoogleMapsPoint> picks = getPointsByIndexes(car.getPicks(), this.picks);
@@ -284,9 +284,9 @@ public class LogisticsProcess {
 		List<GoogleMapsPoint> distinctPicks = picks.stream().distinct().collect(Collectors.toList());
 
 		int[] picksOrder = Arrays.stream(car.getSuggestedRoute()) //
-				.mapToInt(route -> route[0]).limit(car.getSeatsOccupied()).distinct().toArray();
+				.mapToInt(route -> route[0]).limit(distinctPicks.size()).toArray();
 		int[] dropsOrder = Arrays.stream(car.getSuggestedRoute()) //
-				.mapToInt(route -> route[1]).skip(car.getSeatsOccupied() - 1).toArray();
+				.mapToInt(route -> route[1]).skip(distinctPicks.size() - 1).toArray();
 
 		List<HubLocationDto> hubs = IntStream.range(0, distinctPicks.size())
 				.mapToObj(i -> hubLocationDtoFactory.get(tasks.get(i), distinctPicks.get(i)))
@@ -299,10 +299,9 @@ public class LogisticsProcess {
 				.collect(Collectors.toList());
 
 		if (tasks.stream().mapToLong(task -> task.getPickupTime().getTime()).distinct().count() > 1)
-			hubs.get(0)
-					.setTime(new Date(tasks.stream()//
-							.filter(task -> task.getHub().getId().equals(hubs.get(0).getId()))
-							.mapToLong(task -> task.getPickupTime().getTime()).max().orElse(-1)));
+			hubs.get(0).setTime(new Date(tasks.stream()//
+					.filter(task -> task.getHub().getId().equals(hubs.get(0).getId()))
+					.mapToLong(task -> task.getPickupTime().getTime()).max().orElse(-1)));
 
 		AtomicLong start = new AtomicLong(hubs.get(0).getTime().getTime());
 		IntStream.range(1, hubs.size()).forEach(getLambdaForTimeUpdate(start, hubs));
@@ -356,10 +355,10 @@ public class LogisticsProcess {
 	}
 
 	/**
-	 * For each integer i, retrieves duration between locs[i-1] and locs[i],
-	 * using globalMatrix. This value is mapped from seconds to milliseconds.
-	 * Then it's added to start (AtomicLong accumulator). And finally this long
-	 * value is mapped to Date.
+	 * For each integer i, retrieves duration between locs[i-1] and locs[i], using
+	 * globalMatrix. This value is mapped from seconds to milliseconds. Then it's
+	 * added to start (AtomicLong accumulator). And finally this long value is
+	 * mapped to Date.
 	 * 
 	 * @param start
 	 *            -- time value of previous wayPoint

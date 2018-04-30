@@ -24,7 +24,9 @@ public class Car implements Mixable<Car> {
 
 	private final int[] draftDrops;
 	private final int[] fairDrops;
+	private final int[] distinctPicks;
 
+	private int distinctPicksLength;
 	private int maxLength;
 	private final int capacity;
 
@@ -37,8 +39,7 @@ public class Car implements Mixable<Car> {
 	private int draftSeats;
 	private int fairSeats;
 
-	@Autowired
-	private LittlesAlgorithm littlesAlgorithm;
+	private @Autowired LittlesAlgorithm littlesAlgorithm;
 
 	public Car(int capacity, int[][] globalMatrix) {
 		this.capacity = capacity;
@@ -51,6 +52,7 @@ public class Car implements Mixable<Car> {
 		fairPicks = new int[capacity];
 		draftDrops = new int[capacity];
 		fairDrops = new int[capacity];
+		distinctPicks = new int[capacity];
 
 		Arrays.fill(draftPicks, -1);
 		Arrays.fill(fairPicks, -1);
@@ -110,8 +112,8 @@ public class Car implements Mixable<Car> {
 	}
 
 	/**
-	 * @return integer matrix of size [n-1 x 2], where n is sum of pick up and
-	 *         drop off Locations</br>
+	 * @return integer matrix of size [n-1 x 2], where n is sum of pick up and drop
+	 *         off Locations</br>
 	 *         example: {1,1,2,3} -> [1,1] [1,2] [2,3]
 	 */
 	public synchronized int[][] getSuggestedRoute() {
@@ -148,7 +150,6 @@ public class Car implements Mixable<Car> {
 	 */
 	private synchronized void preMix() {
 		shiftEmptySeats();
-		combinePicksAndDrops();
 		findPathLength();
 	}
 
@@ -289,17 +290,39 @@ public class Car implements Mixable<Car> {
 	 * - from each drop off location to each pick up location</br>
 	 * - from each drop off location to each drop off location</br>
 	 * 
-	 * Distance from drop off to pick up location is set to extremely high
-	 * value. It helps to build route straight from picks to drops
+	 * Distance from drop off to pick up location is set to extremely high value. It
+	 * helps to build route straight from picks to drops
 	 */
 	private void combinePicksAndDrops() {
-		for (int i = 0, iPlusSeats = draftSeats; i < draftSeats; i++, iPlusSeats++)
-			for (int j = 0, jPlusSeats = draftSeats; j < draftSeats; j++, jPlusSeats++) {
-				picksDropsGraph[i][j] = globalMatrix[draftPicks[i]][draftPicks[j]];
-				picksDropsGraph[i][jPlusSeats] = globalMatrix[draftPicks[i]][draftDrops[j]];
-				picksDropsGraph[iPlusSeats][j] = LittlesAlgorithm.BIG;
-				picksDropsGraph[iPlusSeats][jPlusSeats] = globalMatrix[draftDrops[i]][draftDrops[j]];
-			}
+
+		distinctPicks[0] = draftPicks[0];
+		distinctPicksLength = 1;
+
+		loop: for (int i = 1; i < draftPicks.length; i++) {
+			if (draftPicks[i] < 0)
+				continue;
+			for (int j = 0; j < distinctPicksLength; j++)
+				if (distinctPicks[j] == draftPicks[i])
+					continue loop;
+			distinctPicks[distinctPicksLength++] = draftPicks[i];
+		}
+
+		for (int i = 0; i < distinctPicksLength; i++)
+			for (int j = 0; j < distinctPicksLength; j++)
+				picksDropsGraph[i][j] = globalMatrix[distinctPicks[i]][distinctPicks[j]];
+
+		for (int i = 0; i < distinctPicksLength; i++)
+			for (int j = 0; j < draftSeats; j++)
+				picksDropsGraph[i][j + distinctPicksLength] = globalMatrix[distinctPicks[i]][draftDrops[j]];
+
+		for (int i = 0; i < draftSeats; i++)
+			for (int j = 0; j < distinctPicksLength; j++)
+				picksDropsGraph[i + distinctPicksLength][j] = LittlesAlgorithm.INF3;
+
+		for (int i = 0; i < draftSeats; i++)
+			for (int j = 0; j < draftSeats; j++)
+				picksDropsGraph[i + distinctPicksLength][j + distinctPicksLength] = //
+						globalMatrix[draftDrops[i]][draftDrops[j]];
 	}
 
 	/**
@@ -316,9 +339,10 @@ public class Car implements Mixable<Car> {
 			draftRoute = new int[][] { { draftPicks[0], draftDrops[0] } };
 
 		} else {
-			draftRoute = littlesAlgorithm.withGraph(picksDropsGraph, 2 * draftSeats).findHamiltonianCycle();
-			draftPathLength = draftRoute[0][0] - LittlesAlgorithm.BIG;
-			draftRoute = cleanRoute(draftRoute);
+			combinePicksAndDrops();
+			littlesAlgorithm.findHamiltonianCycle(picksDropsGraph, draftSeats + distinctPicksLength);
+			draftPathLength = littlesAlgorithm.getPathLength() - LittlesAlgorithm.INF3;
+			draftRoute = cleanRoute(littlesAlgorithm.getPathCycle());
 		}
 	}
 
@@ -329,11 +353,11 @@ public class Car implements Mixable<Car> {
 	 *         each pick up and drop off location is visited in proper order
 	 */
 	private int[][] cleanRoute(int[][] dirtyRoute) {
-		int[][] cleanRoute = new int[dirtyRoute.length - 2][2];
+		int[][] cleanRoute = new int[dirtyRoute.length - 1][2];
 		int start = -1, end = -1;
 
-		for (int i = 1; i < dirtyRoute.length; i++)
-			if (picksDropsGraph[dirtyRoute[i][0]][dirtyRoute[i][1]] == LittlesAlgorithm.BIG) {
+		for (int i = 0; i < dirtyRoute.length; i++)
+			if (picksDropsGraph[dirtyRoute[i][0]][dirtyRoute[i][1]] == LittlesAlgorithm.INF3) {
 				end = dirtyRoute[i][0];
 				start = dirtyRoute[i][1];
 				dirtyRoute[i][0] = dirtyRoute[i][1] = -1;
@@ -341,14 +365,14 @@ public class Car implements Mixable<Car> {
 			}
 
 		for (int i = 0; start != end; i++)
-			for (int j = 1; j < dirtyRoute.length; j++)
+			for (int j = 0; j < dirtyRoute.length; j++)
 				if (dirtyRoute[j][0] == start) {
-					cleanRoute[i][0] = start < draftSeats ? //
-							draftPicks[start] : draftDrops[start - draftSeats];
+					cleanRoute[i][0] = start < distinctPicksLength ? //
+							distinctPicks[start] : draftDrops[start - distinctPicksLength];
 
 					start = dirtyRoute[j][1];
-					cleanRoute[i][1] = start < draftSeats ? //
-							draftPicks[start] : draftDrops[start - draftSeats];
+					cleanRoute[i][1] = start < distinctPicksLength ? //
+							distinctPicks[start] : draftDrops[start - distinctPicksLength];
 					break;
 				}
 
@@ -356,8 +380,7 @@ public class Car implements Mixable<Car> {
 	}
 
 	/**
-	 * Copies pathLength, seats, picks, drops, route values from draft to fair
-	 * </br>
+	 * Copies pathLength, seats, picks, drops, route values from draft to fair</br>
 	 * Must be called when better result is achieved during the mix operation
 	 */
 	private void copyFromDraftToFair() {
@@ -375,8 +398,7 @@ public class Car implements Mixable<Car> {
 	}
 
 	/**
-	 * Copies pathLength, seats, picks, drops, route values from fair to draft
-	 * </br>
+	 * Copies pathLength, seats, picks, drops, route values from fair to draft </br>
 	 * Must be called when better result isn't achieved during the mix operation
 	 */
 	private void copyFromFairToDraft() {

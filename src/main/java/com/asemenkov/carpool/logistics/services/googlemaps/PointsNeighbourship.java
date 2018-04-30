@@ -8,8 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.asemenkov.carpool.logistics.services.enums.Status;
+import com.asemenkov.carpool.logistics.utils.QuerySender;
 import com.asemenkov.carpool.logistics.utils.WaitUtil;
-import com.asemenkov.carpool.logistics.utils.io.QuerySender;
 
 /**
  * Composes distance and duration matrices via requests to Google Maps Distance
@@ -66,18 +66,18 @@ public class PointsNeighbourship {
 
 	/**
 	 * Updates static field with request time</br>
-	 * Each instance must check this field before request to Google Maps and
-	 * update it after request
+	 * Each instance must check this field before request to Google Maps and update
+	 * it after request
 	 */
 	public static void updateLastRequestTime() {
 		latestRequestTime = System.currentTimeMillis();
 	}
 
 	/**
-	 * If sum of pick up and drop off Locations is greater than 10, matrices
-	 * cannot be built with one request. The reason is Google Map limitation:
-	 * 100 elements per second. In this case all Locations are grouped into
-	 * clusters 10x10. For each cluster:</br>
+	 * If sum of pick up and drop off Locations is greater than 10, matrices cannot
+	 * be built with one request. The reason is Google Map limitation: 100 elements
+	 * per second. In this case all Locations are grouped into clusters 10x10. For
+	 * each cluster:</br>
 	 * 1. Sends request to Google Maps</br>
 	 * 2. Parses response (if status != OK, the process is stopped)</br>
 	 * 3. Writes data into corresponding part of matrix</br>

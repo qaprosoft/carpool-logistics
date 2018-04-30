@@ -2,31 +2,22 @@ package com.asemenkov.carpool.logistics.tests;
 
 import java.util.Arrays;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.Test;
 import org.testng.asserts.SoftAssert;
 
 import com.asemenkov.carpool.logistics.RealWorldData;
-import com.asemenkov.carpool.logistics.config.GoogleMapsConfiguration;
 import com.asemenkov.carpool.logistics.services.googlemaps.GoogleMapsPoint;
 import com.asemenkov.carpool.logistics.services.googlemaps.PointsNeighbourship;
-import com.asemenkov.carpool.logistics.utils.Factories.DuoFactory;
-import com.asemenkov.carpool.logistics.utils.io.CustomLogger;
+import com.asemenkov.carpool.logistics.utils.CustomLogger;
 
 /**
  * @author asemenkov
  * @since Feb 7, 2018
  */
 @Test
-@ContextConfiguration(classes = GoogleMapsConfiguration.class)
-public class GoogleMapsTest extends AbstractTestNGSpringContextTests {
+public class GoogleMapsTest extends AbstractTest {
 
 	private static final boolean ENABLE_HUGE_GOOGLE_MAPS_TESTS = false;
-
-	@Autowired
-	private DuoFactory<GoogleMapsPoint[], GoogleMapsPoint[], PointsNeighbourship> pointsNeighbourshipFactory;
 
 	@Test
 	public void testGoogleMapsMatrix3Passangers2Hubs() {
